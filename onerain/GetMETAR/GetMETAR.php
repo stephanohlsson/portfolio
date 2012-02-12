@@ -1,15 +1,15 @@
 <?php
 require_once '/usr/local/onerain/bin/data-agents/phplib/bin/agentgetter.php';
 /**
- * GetMETAR getter agent
- *
- * @version    $Id: edit.php 1169 2011-10-05 19:59:43Z rick.jensen $   
- * @author stephan.ohlsson
- */
+* GetMETAR getter agent
+*
+* @version    $Id: edit.php 1169 2011-10-05 19:59:43Z rick.jensen $   
+* @author stephan.ohlsson
+*/
 class GetMETAR extends AgentGetter {
-    protected $config;
-    protected $output_handle;
-    protected $log;
+	protected $config;
+	protected $output_handle;
+	protected $log;
 	private $precip_found = 0;
 	private $advanced_temp_found = 0;
 	private $output_buffer = '';
@@ -18,34 +18,34 @@ class GetMETAR extends AgentGetter {
 	private $site_alias;
 	private $temp;
 	private $dew;
-    protected function init_config() {
-        $this->config['conf'] = '/usr/local/onerain/bin/data-agents/GetMETAR/perl_metar_onerain.ini';
-        $this->config['data.datadir'] = '/tmp/onerain-GetMETAR/';
-        $this->config['data.output_filename'] = time() . '.dat';
-        $this->config['logging.log_path'] = '/var/log/onerain/GetMETAR.log';
-        $this->config['logging.level'] = LOG_INFO;
-        $this->config['is_cli'] = php_sapi_name() === 'cli';
-        $this->config['data.app_name'] = 'GetMETAR';
-        $this->config['data.source'] = '';
-        $this->config['data.system_key'] = '';
-        $this->config['data.email'] = 'operation.support@onerain.com';
-        $this->config['get.unique_alias'] = TRUE;
-        ini_set('user_agent', 'GetMETAR/php' . phpversion());
-        $this->config['metar_host'] = 'http://weather.noaa.gov';
-        $this->config['method'] = '/pub/data/observations/metar/stations/';
-        $this->config['data.offset'] = 7200;
-        // 2011-08-30 00:11:00 52118404 PC 47.87
-        $this->config['dat_output_format'] = '%1$s %2$s:00 %3$s %4$s %5$s';
-    }
-    protected function process($station) {
+	protected function init_config() {
+		$this->config['conf'] = '/usr/local/onerain/bin/data-agents/GetMETAR/perl_metar_onerain.ini';
+		$this->config['data.datadir'] = '/tmp/onerain-GetMETAR/';
+		$this->config['data.output_filename'] = time() . '.dat';
+		$this->config['logging.log_path'] = '/var/log/onerain/GetMETAR.log';
+		$this->config['logging.level'] = LOG_INFO;
+		$this->config['is_cli'] = php_sapi_name() === 'cli';
+		$this->config['data.app_name'] = 'GetMETAR';
+		$this->config['data.source'] = '';
+		$this->config['data.system_key'] = '';
+		$this->config['data.email'] = 'operation.support@onerain.com';
+		$this->config['get.unique_alias'] = TRUE;
+		ini_set('user_agent', 'GetMETAR/php' . phpversion());
+		$this->config['metar_host'] = 'http://weather.noaa.gov';
+		$this->config['method'] = '/pub/data/observations/metar/stations/';
+		$this->config['data.offset'] = 7200;
+		// 2011-08-30 00:11:00 52118404 PC 47.87
+		$this->config['dat_output_format'] = '%1$s %2$s:00 %3$s %4$s %5$s';
+	}
+	protected function process($station) {
 		$this->site_alias = $station['site_alias'];
-        $url = $this->config['metar_host'] . $this->config['method'] . $station['site_alias'] . '.TXT';
-        $this->log->log(LOG_DEBUG, 'Connecting to URL ' . $url);
-        $handle = fopen($url, 'r');
-        if (!$handle) {
-            $this->log->log(LOG_ERR, 'Could not connect to URL ' . $url);
-            return FALSE;
-        }
+		$url = $this->config['metar_host'] . $this->config['method'] . $station['site_alias'] . '.TXT';
+		$this->log->log(LOG_DEBUG, 'Connecting to URL ' . $url);
+		$handle = fopen($url, 'r');
+		if (!$handle) {
+			$this->log->log(LOG_ERR, 'Could not connect to URL ' . $url);
+			return FALSE;
+		}
 		while ($line = fgets($handle)) {
 			//example: 2011/12/01 18:53
 			//         KUAO 011853Z AUTO 36005KT 10SM CLR 07/01 A3067 RMK AO2 SLP386 T00670011
@@ -107,11 +107,11 @@ class GetMETAR extends AgentGetter {
 			$this->output_buffer = $this->output_buffer . "$this->current_date $this->current_time $this->site_alias Dew $this->dew\n";
 		}
 	
-        fwrite($this->output_handle, $this->output_buffer);
-        $this->log->log(LOG_INFO, 'Got station ' . $station['site_device']);
-        fclose($handle);
-        return TRUE;
-    }
+		fwrite($this->output_handle, $this->output_buffer);
+		$this->log->log(LOG_INFO, 'Got station ' . $station['site_device']);
+		fclose($handle);
+		return TRUE;
+	}
 	// Helper functions
 	private function decode_wind($matches) {
 		$velocity = $matches[2];
