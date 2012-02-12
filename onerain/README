@@ -1,0 +1,23 @@
+This is one of the projects that I completed for OneRain, Inc. It's
+dubbed the 'data-agent' project. In short, it's a collection of 
+scripts which scrape weather data from various sources and post them
+into our database.
+
+There are two abstract classes found in phplib - agentWrapper and 
+agentGetter. The wrapper is the main script that is called from the
+cron. It calls the generateSystemSource.py script, which generates
+a file containing essentially sensor identifiers and timezone off-
+sets. The wrapper then calls the getter script with the source file
+generated from the .py script. The getter script queries the respective
+web API and parses (via regular expressions) the data. It writes out a 
+standardized file. The wrapper then takes this file and passes it to 
+loadData, which converts all times to UTC, marks up the data in XML, 
+and then posts it to the data-exchange servlet for entry into the 
+database. loadData keeps track of last post times by writing the 
+.times file. This ensures that old data is not posted to the exchange.
+
+I've only included two of the actual getters, GetUSGS and GetMETAR. 
+In reality, there are more like 10 or so (with more planned), so 
+that's why we wanted to design a modular system. 
+
+This code currently running in production.
