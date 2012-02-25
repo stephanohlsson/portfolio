@@ -1,0 +1,450 @@
+
+template <typename T>
+btree<T>::btree(size_t maxNodeElements = 40) {
+	maxNodeElem = maxNodeElements;
+}
+
+template <typename T>
+btree<T>::btree(const btree<T>& original) {
+	maxNodeElem = original.maxNodeElem;
+	root = original.root;
+	for(typename std::map<T, typename btree<T>::Val>::iterator i = root.vals_.begin();
+	i != root.vals_.end(); i++) {
+		copy_val(i->second, &root);	
+	}
+}
+// Recursive copy
+template <typename T>
+void btree<T>::copy_val(typename btree<T>::Val& v, Node* parent) {
+	if(v.left != 0) {
+		Node *n = new Node;
+		n->parent_n = parent;
+		copy_node(v.left, n);
+		v.left = n;
+	}
+	if(v.right != 0) {
+		Node *n = new Node;
+		n->parent_n = parent;
+		copy_node(v.right, n);
+		v.right = n;
+	}
+}
+
+template <typename T>
+void btree<T>::copy_node(Node* old, Node* new_n) {
+	new_n->vals_ = old->vals_;
+	for(typename std::map<T, typename btree<T>::Val>::iterator i = new_n->vals_.begin();
+	i != new_n->vals_.end(); i++) {
+		copy_val(i->second, new_n);
+	}
+}
+
+template <typename T>
+btree<T>& btree<T>::operator=(const btree<T>& rhs) {
+	btree<T> *t = new btree<T>(rhs);
+	return *t;
+}
+
+template <typename T>
+typename btree<T>::iterator btree<T>::begin() {
+	typename std::map<T, typename btree<T>::Val>::iterator itr = root.vals_.begin();
+	if(itr == root.vals_.end()) {
+		// No elements in map
+		btree_iterator<T> btree_itr(&root, itr);
+		return btree_itr;
+	}
+	else if(itr->second.left == 0) {
+		// Return this itr
+		btree_iterator<T> btree_itr(&root, itr);
+		return btree_itr;
+		
+	}
+	else {
+		return itr_recur_left(itr->second.left);
+	}
+
+}
+
+template <typename T>
+typename btree<T>::const_iterator btree<T>::begin() const {
+	typename std::map<T, typename btree<T>::Val>::const_iterator itr = root.vals_.begin();
+	if(itr == root.vals_.end()) {
+		// No elements in map
+		const_btree_iterator<T> btree_itr(&root, itr);
+		return btree_itr;
+	}
+	else if(itr->second.left == 0) {
+		// Return this itr
+		const_btree_iterator<T> btree_itr(&root, itr);
+		return btree_itr;
+
+	}
+	else {
+		return itr_recur_left(itr->second.left);
+	}
+}
+
+
+template <typename T>
+typename btree<T>::iterator btree<T>::itr_recur_left(Node* n) {
+	typename std::map<T, typename btree<T>::Val>::iterator itr = n->vals_.begin();
+	if(itr->second.left == 0) {
+		// Return this itr
+		btree_iterator<T> btree_itr(n, itr);
+		return btree_itr;
+	}
+	else {
+		return itr_recur_left(itr->second.left);
+	}
+}
+
+template <typename T>
+typename btree<T>::const_iterator btree<T>::itr_recur_left(Node* n) const {
+	typename std::map<T, typename btree<T>::Val>::const_iterator itr = n->vals_.begin();
+	if(itr->second.left == 0) {
+		// Return this itr
+		const_btree_iterator<T> btree_itr(n, itr);
+		return btree_itr;
+	}
+	else {
+		return itr_recur_left(itr->second.left);
+	}
+}
+
+
+template <typename T>
+typename btree<T>::iterator btree<T>::end() {
+	typename std::map<T, typename btree<T>::Val>::iterator itr = root.vals_.end();
+	btree_iterator<T> btree_itr(&root, itr);
+	return btree_itr;
+}
+
+template <typename T>
+typename btree<T>::const_iterator btree<T>::end() const {
+	typename std::map<T, typename btree<T>::Val>::const_iterator itr = root.vals_.end();
+	const_btree_iterator<T> btree_itr(&root, itr);
+	return btree_itr;
+}
+
+
+
+template <typename T>
+typename btree<T>::iterator btree<T>::find(const T& elem) {
+	typename std::map<T, typename btree<T>::Val>::iterator itr = root.vals_.find(elem);
+	if(itr != root.vals_.end()) {
+		return btree_iterator<T>(&root, itr);
+	}
+	else {
+		itr = root.vals_.upper_bound(elem);
+		if(itr == root.vals_.end()) {
+			// Right side
+			itr--;
+			if(itr->second.right != 0)
+			return find_recur(itr->second.right, elem);
+			else
+			return this->end();
+		}
+		else if(itr == root.vals_.begin()) {
+			// Left side
+			if(itr->second.left != 0)
+			return find_recur(itr->second.left, elem);
+			else
+			return this->end();
+		}
+		else if(itr->second.left == 0) {
+			// DNE
+			return this->end();
+		}
+		else {
+			// Middle
+			return find_recur(itr->second.left, elem);
+		}
+	}
+
+}
+
+template <typename T>
+typename btree<T>::iterator btree<T>::find_recur(Node* n, const T& elem) {
+	typename std::map<T, typename btree<T>::Val>::iterator itr = n->vals_.find(elem);
+	if(itr != n->vals_.end()) {
+		return btree_iterator<T>(n, itr);
+	}
+	else {
+		itr = n->vals_.upper_bound(elem);
+		if(itr == n->vals_.end()) {
+			itr--;
+			if(itr->second.right != 0)
+			return find_recur(itr->second.right, elem);
+			else
+			return this->end();
+		}
+		else if(itr == n->vals_.begin()) {
+			if(itr->second.left != 0)
+			return find_recur(itr->second.left, elem);
+			else {
+				return this->end();
+			}
+		}
+		else if(itr->second.left == 0) {
+			return this->end();
+		}
+		else {
+			return find_recur(itr->second.left, elem);
+		}
+	}
+}
+
+
+template <typename T>
+typename btree<T>::const_iterator btree<T>::find(const T& elem) const {
+	//cout << elem << endl;
+	typename std::map<T, typename btree<T>::Val>::const_iterator itr = root.vals_.find(elem);
+	if(itr != root.vals_.end()) {
+		const_btree_iterator<T> const_itr(&root, itr);
+		return const_itr;
+	}
+	else {
+		itr = root.vals_.upper_bound(elem);
+		if(itr == root.vals_.end()) {
+			// Right side
+			itr--;
+			if(itr->second.right != 0)
+			return find_recur(itr->second.right, elem);
+			else
+			return this->end();
+		}
+		else if(itr == root.vals_.begin()) {
+			// Left side
+			if(itr->second.left != 0)
+			return find_recur(itr->second.left, elem);
+			else
+			return this->end();
+		}
+		else if(itr->second.left == 0) {
+			// DNE
+			return this->end();
+		}
+		else {
+			// Middle
+			return find_recur(itr->second.left, elem);
+		}
+	}
+}
+
+template <typename T>
+typename btree<T>::const_iterator btree<T>::find_recur(Node* n, const T& elem) const {
+	typename std::map<T, typename btree<T>::Val>::const_iterator itr = n->vals_.find(elem);
+	if(itr != n->vals_.end()) {
+		return const_btree_iterator<T>(n, itr);
+	}
+	else {
+		itr = n->vals_.upper_bound(elem);
+		if(itr == n->vals_.end()) {
+			itr--;
+			if(itr->second.right != 0)
+			return find_recur(itr->second.right, elem);
+			else
+			return this->end();
+		}
+		else if(itr == n->vals_.begin()) {
+			if(itr->second.left != 0)
+			return find_recur(itr->second.left, elem);
+			else
+			return this->end();
+		}
+		else if(itr->second.left == 0) {
+			return this->end();
+		}
+		else {
+			return find_recur(itr->second.left, elem);
+		}
+	}
+}
+
+template <typename T>
+std::pair<typename btree<T>::iterator, bool> btree<T>::insert(const T& elem) {
+	for(typename std::map<T, Val>::iterator i = root.vals_.begin(); i != root.vals_.end(); i++) {
+		//cout << i->first << " " << i->second.right << endl;
+	}
+
+	if(root.vals_.find(elem) != root.vals_.end()) {
+		// element exists, return special pair
+		return pair<typename btree<T>::iterator, bool> (
+		btree_iterator<T>(&root, root.vals_.find(elem)), false);
+	}
+	else if(root.vals_.size() < maxNodeElem) {
+		// Insert into root node
+		Val v;
+		v.val = elem;
+		root.vals_.insert(pair<T,Val>(elem,v));
+		typename std::map<T, typename btree<T>::Val>::iterator itr = root.vals_.find(elem);
+		return pair<typename btree<T>::iterator, bool> (
+		btree_iterator<T>(&root, itr), true);
+	}
+	else {
+		typename std::map<T, Val>::iterator upperb = root.vals_.upper_bound(elem);
+		// Elem is left of the root
+		if(upperb == root.vals_.begin()) {
+			// Element inserted on left side of root
+			if(upperb->second.left == 0) {
+				return insert_new_node_left(&root, upperb->first, elem);
+			}
+			else {
+				return insert_recur(upperb->second.left, elem);
+			}
+		}
+		// Elem is right of the root
+		else if(upperb == root.vals_.end()) {
+			upperb--;
+			if(upperb->second.right == 0) {
+				return insert_new_node_right(&root, upperb->first, elem);
+			}
+			else {
+				return insert_recur(upperb->second.right, elem);
+			}
+		}
+		// Elem is under the root, new node required
+		else if(upperb->second.left == 0) {
+			return insert_new_node(&root, upperb->first, elem);
+		}
+		// Elem is under the root, no new node required
+		else {
+			return insert_recur(upperb->second.left, elem);
+		}
+	}
+}
+
+template <typename T>
+std::pair<typename btree<T>::iterator, bool> btree<T>::insert_recur
+(Node *node, const T& elem) {
+	if(node->vals_.find(elem) != node->vals_.end()) {
+		// element exists, return special pair
+		return pair<typename btree<T>::iterator, bool> (
+		btree_iterator<T>(node, node->vals_.find(elem)), false);
+	}
+	else if(node->vals_.size() < maxNodeElem) {
+		// Node exists and is empty space, insert
+		Val v;
+		v.val = elem;
+		node->vals_.insert( pair<T, Val>(elem, v) );
+		typename std::map<T, typename btree<T>::Val>::iterator itr = node->vals_.find(elem);
+		return pair<typename btree<T>::iterator, bool> (
+		btree_iterator<T>(node, itr), true);
+	}
+	else {
+
+		typename std::map<T, Val>::iterator upperb = node->vals_.upper_bound(elem);
+		if(upperb == node->vals_.begin()) {
+			// Element inserted on left side of root
+			if(upperb->second.left == 0) {
+				return insert_new_node_left(node, upperb->first, elem);
+			}
+			else {
+				return insert_recur(upperb->second.left, elem);
+			}
+		}
+		else if(upperb == node->vals_.end()) {
+			// Right side
+			upperb--;
+			if(upperb->second.right == 0) {
+				return insert_new_node_right(node, upperb->first, elem);
+			}
+			else {
+				return insert_recur(upperb->second.right, elem);
+			}
+		}
+		else if(upperb->second.left == 0) {
+			return	insert_new_node(node, upperb->first, elem);
+		}
+		else {
+			return insert_recur(upperb->second.left, elem);
+		}
+	}
+}
+
+template <typename T>
+std::pair<typename btree<T>::iterator, bool> btree<T>::insert_new_node
+(Node* parent, const T& upperb, const T& elem) {
+	// Create node
+	Node *n = new Node;
+	n->parent_n = parent;
+	// Insert value into node
+	Val v;
+	v.val = elem;
+	n->vals_.insert(pair<T,Val>(elem,v));
+	typename std::map<T, typename btree<T>::Val>::iterator itr = parent->vals_.find(upperb);
+	itr->second.left = n;
+	// Update parent node
+	itr--;
+	itr->second.right = n;
+	return pair<typename btree<T>::iterator, bool> (btree_iterator<T>(n, itr), true);
+
+}
+// Special case inserting where we are creating a leaf on the left hand side of the tree
+// Only needs to update 1 parent
+template <typename T>
+std::pair<typename btree<T>::iterator, bool> btree<T>::insert_new_node_left
+(Node* parent, const T& upperb, const T& elem) {
+	// Create node
+	Node *n = new Node;
+	n->parent_n = parent;
+	// Insert value into node
+	Val v;
+	v.val = elem;
+	n->vals_.insert(pair<T,Val>(elem,v));
+	typename std::map<T, typename btree<T>::Val>::iterator itr = parent->vals_.find(upperb);
+	itr->second.left = n;
+	return pair<typename btree<T>::iterator, bool> (btree_iterator<T>(n, itr), true);
+
+}
+// Same thing, but leaf on right hand side of tree
+template <typename T>
+std::pair<typename btree<T>::iterator, bool> btree<T>::insert_new_node_right
+(Node* parent, const T& upperb, const T& elem) {
+	// Create node
+	Node *n = new Node;
+	n->parent_n = parent;
+	// Insert value into node
+	Val v;
+	v.val = elem;
+	n->vals_.insert(pair<T,Val>(elem,v));
+	typename std::map<T, typename btree<T>::Val>::iterator itr = parent->vals_.find(upperb);
+	itr->second.right = n;
+	return pair<typename btree<T>::iterator, bool> (btree_iterator<T>(n, itr), true);
+
+}
+
+
+
+
+template <typename T>
+btree<T>::~btree() {
+	for(typename std::map<T, typename btree<T>::Val>::iterator i = root.vals_.begin();
+	i != root.vals_.end(); i++) {
+		destroy_val(i->second);
+	}
+}
+
+template <typename T>
+void btree<T>::destroy_val(Val& val) {
+	if(val.left != 0) {
+		for(typename std::map<T, typename btree<T>::Val>::iterator i = val.left->vals_.begin();
+		i != val.left->vals_.end(); i++) {
+			destroy_val(i->second);
+		}
+		delete val.left;
+		val.left = 0;
+	}
+}	
+
+template <typename T>
+std::ostream& operator<<(std::ostream& out, const btree<T>& b) {
+	const_btree_iterator<T> itr = b.begin();
+	while(itr != b.end()) {
+		std::cout << *(itr);
+		++itr;
+		if(itr != b.end())
+		std::cout << " ";
+	}
+	return out;
+}

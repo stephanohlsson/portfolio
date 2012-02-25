@@ -1,0 +1,6 @@
+This is another school project which provides a templated implementation
+of a btree and btree iterator (capable of doing and in-order traverse of
+the btree). There are const and non-const versions of the iterator. This
+project demonstrates the use of developing templated classes, implementing
+iterators for custom data structures, operator overloading, const-correctness,
+iterator adaptors, and storing and finding data in a custom tree structure. 
