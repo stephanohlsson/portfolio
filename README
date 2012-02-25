@@ -1,0 +1,6 @@
+Welcome to my sample code portfolio! In /c, you will find a very simple
+HTTP server, demonstrating some network programming abilities. In /cpp,
+you will find two school projects demonstrating in-depth knowledge of C++. 
+In /onerain, you will find code that I produced for my internship with 
+OneRain, Inc, mostly PHP and python scripts. More in-depth information
+can be found in the READMEs of each respective project.
