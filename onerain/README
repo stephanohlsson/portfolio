@@ -14,7 +14,7 @@ standardized file. The wrapper then takes this file and passes it to
 loadData, which converts all times to UTC, marks up the data in XML, 
 and then posts it to the data-exchange servlet for entry into the 
 database. loadData keeps track of last post times by writing the 
-.times file. This ensures that old data is not posted to the exchange.
+.times file. This ensures that only new data is posted to the exchange.
 
 I've only included two of the actual getters, GetUSGS and GetMETAR. 
 In reality, there are more like 10 or so (with more planned), so 

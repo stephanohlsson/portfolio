@@ -1,0 +1,8 @@
+This is a school project that I completed, which involved the 
+implementation of a sparse matrix (only stores non-zero values).
+This project demonstrates the use of constructors, copy control, 
+destructors, static memebers, overloaded operators, friends, 
+exception handling, dynamic memory management, pointers,
+const-correctness, and seperation of implementation and 
+interface. Although the implemenation is lengthy, I belive 
+that the interface is clean and the internal concepts straightforward.
