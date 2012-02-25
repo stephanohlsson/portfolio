@@ -93,16 +93,14 @@ void getdir(char buffer[BUFSIZE], int newsock) {
 	perror("Error deleting temp");
 }
 void getfile(char file[BUFSIZE] int newsock, char buffer[BUFSIZE]) {
-	int m, n, fd, contentLength;
-	m = n = 0;
+	int m, fd, contentLength;
+	m = 0;
 	if(file[0] == '/')
-	m++;
+		m++;
 	while(file[m] != '\0') {
-		file[n] = file[m];
-		n++;
+		file[m] = file[m++];
 		m++;
 	}
-	file[n] = '\0';
 	fd = open(file, O_RDONLY);
 	// Error 404
 	if(fd < 0) {
