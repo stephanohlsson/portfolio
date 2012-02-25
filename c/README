@@ -1,0 +1,3 @@
+This is a very simple HTTP (1.1) server that I wrote a couple years ago.
+Very simple implementation. Demonstrates the use of network programming, 
+HTTP protocol, and system calls.
